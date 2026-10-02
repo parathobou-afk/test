@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>วงล้อสุ่มชื่อเล่น 4 คน</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#18202a;background:#f6f7fb}
+*{box-sizing:border-box}body{margin:0;padding:20px}.app{max-width:980px;margin:auto}
+h1{margin:0 0 6px;font-size:28px}.sub{color:#68707c;margin-bottom:18px}
+.layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}.panel{background:#fff;border:1px solid #e3e6ec;border-radius:18px;padding:18px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+#names{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.name{border:1px solid #d8dce4;background:#fff;border-radius:10px;min-height:44px;padding:8px;cursor:pointer;font-size:15px}
+.name.on{background:#222;color:white;border-color:#222;font-weight:700}
+button{font:inherit}.clear,.spin{border:0;border-radius:12px;min-height:46px;padding:10px 16px;cursor:pointer}
+.clear{background:#eceff4}.spin{width:100%;background:#222;color:#fff;font-weight:800;font-size:18px;margin-top:12px}
+.spin:disabled{opacity:.35;cursor:not-allowed}
+.wheelwrap{position:relative;max-width:420px;margin:auto}.pointer{position:absolute;z-index:2;left:50%;top:-2px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:30px solid #111}
+canvas{display:block;width:100%;height:auto}.result{margin-top:12px;padding:14px;border-radius:12px;background:#f1f3f7;text-align:center;font-weight:800;min-height:52px}
+.small{font-size:14px;color:#6b7280}
+@media(max-width:760px){body{padding:12px}.layout{grid-template-columns:1fr}#names{grid-template-columns:repeat(2,1fr)}h1{font-size:23px}}
+</style>
+</head>
+<body><main class="app">
+<h1>🎡 วงล้อสุ่มชื่อเล่น</h1>
+<div class="sub">เลือกชื่อ 4 คนจากทั้งหมด แล้วกดหมุนได้เลย</div>
+<div class="layout">
+<section class="panel">
+ <div class="top"><div><b>เลือกผู้เล่น</b><div id="count" class="small">เลือกแล้ว 0 / 4</div></div><button class="clear" id="clear">ล้าง</button></div>
+ <div id="names"></div><div id="note" class="small" style="margin-top:10px"></div>
+</section>
+<section class="panel">
+ <div class="wheelwrap"><div class="pointer"></div><canvas id="wheel" width="700" height="700"></canvas></div>
+ <button id="spin" class="spin" disabled>🎡 หมุนวงล้อ</button>
+ <div id="result" class="result">เลือกให้ครบ 4 คนก่อน</div>
+</section>
+</div>
+</main>
+<script>
+const people=["แฟ้ง","บิ๊ก","อ๊อบ","แนค","ไผ่","ซัน","ฟอร์ดสุดหล่อ","โอม","พูม","อั๋น","เจ","แจ็คกี้","เม่น","อุ้ม","ปอนด์","Max","ข้าวก้อง","ไตเติ้ล","เสือ","ต่อ","บอส","ปลั๊ก","โบ๊ต","นพ","หนึ่ง","เติ้ล"];
+const names=document.querySelector("#names"),count=document.querySelector("#count"),note=document.querySelector("#note"),spin=document.querySelector("#spin"),result=document.querySelector("#result"),clear=document.querySelector("#clear"),canvas=document.querySelector("#wheel"),ctx=canvas.getContext("2d");
+let selected=[],angle=0,busy=false;
+people.forEach(n=>{let b=document.createElement("button");b.className="name";b.textContent=n;b.onclick=()=>{if(busy)return;if(selected.includes(n)){selected=selected.filter(x=>x!==n);b.classList.remove("on")}else if(selected.length<4){selected.push(n);b.classList.add("on")}else note.textContent="เลือกได้ 4 คนเท่านั้น — กดชื่อที่เลือกไว้ออกก่อนเพื่อเปลี่ยนคน";update()};names.appendChild(b)});
+function update(){count.textContent=`เลือกแล้ว ${selected.length} / 4`;spin.disabled=selected.length!==4||busy;if(selected.length<4)result.textContent="เลือกให้ครบ 4 คนก่อน";if(selected.length<=4&&selected.length!==4)note.textContent="";draw()}
+function draw(){let c=350,r=330,list=selected.length?selected:["?","?","?","?"];ctx.clearRect(0,0,700,700);ctx.save();ctx.translate(c,c);let colors=["#4f6d7a","#b56a78","#5f8f73","#b88746"];for(let i=0;i<4;i++){let a0=angle+i*Math.PI/2-Math.PI/2,a1=a0+Math.PI/2;ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,r,a0,a1);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=5;ctx.stroke();ctx.save();ctx.rotate(a0+Math.PI/4);ctx.translate(r*.62,0);ctx.rotate(Math.PI/2);ctx.fillStyle="#fff";ctx.font="bold 32px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";let t=list[i]||"?";ctx.fillText(t.length>10?t.slice(0,10)+"…":t,0,0);ctx.restore()}ctx.beginPath();ctx.arc(0,0,58,0,Math.PI*2);ctx.fillStyle="#fff";ctx.fill();ctx.fillStyle="#111";ctx.font="bold 24px system-ui";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("GO",0,1);ctx.restore()}
+spin.onclick=()=>{if(selected.length!==4||busy)return;busy=true;spin.disabled=true;result.textContent="กำลังหมุน... 🎡";let winner=Math.floor(Math.random()*4),seg=Math.PI/2,target=-Math.PI/2-(winner*seg+seg/2),delta=((target-angle)%(2*Math.PI)+2*Math.PI)%(2*Math.PI),total=delta+2*Math.PI*(6+Math.floor(Math.random()*3)),start=angle,t0=performance.now(),dur=4300;function anim(t){let p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,4);angle=start+total*e;draw();if(p<1)requestAnimationFrame(anim);else{angle%=2*Math.PI;busy=false;spin.disabled=false;result.textContent=`🎉 ได้ ${selected[winner]}!`}}requestAnimationFrame(anim)};
+clear.onclick=()=>{if(busy)return;selected=[];document.querySelectorAll(".name").forEach(b=>b.classList.remove("on"));note.textContent="";update()};draw();
+</script></body></html>
